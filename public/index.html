@@ -1,39 +1,40 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SSE Demo</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Demo</title>
 </head>
 <body>
-  <h1>Server-Sent Events Demo</h1>
-  <div id="sse-data"></div>
-  <form id="message-form">
-    <input type="text" id="message-input" placeholder="Type your message">
-    <button type="submit">Send</button>
-  </form>
+    <h1>WebSocket Demo</h1>
+    <div id="websocket-data"></div>
+    <form id="message-form">
+        <input type="text" id="message-input" placeholder="Type your message">
+        <button type="submit">Send</button>
+    </form>
 
-  <script>
-  const serverUrl = window.location.origin; // Use origin for cross-system compatibility
-  const eventSource = new EventSource(`${serverUrl}/events`);
-  const sseDataElement = document.getElementById('sse-data');
+    <script>
+        const socket = new WebSocket('ws://localhost:4000');
 
-  eventSource.onmessage = function(event) {
-    const data = JSON.parse(event.data);
-    sseDataElement.innerHTML += `<p>${data.message}</p>`;
-  };
+        socket.onopen = function(event) {
+            console.log('WebSocket connection established');
+        };
 
-  const messageForm = document.getElementById('message-form');
-  const messageInput = document.getElementById('message-input');
-  messageForm.addEventListener('submit', function(event) {
-    event.preventDefault();
-    const message = messageInput.value;
-    fetch(`${serverUrl}/send-message?message=${encodeURIComponent(message)}`)
-      .then(response => response.text())
-      .then(response => console.log(response))
-      .catch(error => console.error('Error sending message:', error));
-    messageInput.value = '';
-  });
-  </script>
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            const websocketDataElement = document.getElementById('websocket-data');
+            websocketDataElement.innerHTML += `<p>${data.message}</p>`;
+        };
+
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+        messageForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const message = messageInput.value;
+            socket.send(JSON.stringify({ message }));
+            messageInput.value = '';
+        });
+    </script>
 </body>
 </html>
